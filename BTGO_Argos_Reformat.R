@@ -32,7 +32,13 @@ library(nestR)
 vignette("nestR")
 library(conflicted)
 
+conflict_prefer("filter", "dplyr")
+conflict_prefer("select", "dplyr")
+conflict_prefer("rename", "dplyr")
+
 library(stats)
+
+
 
 movedata <- filter(movedata, movedata$location.lat>= 52)
 movedata <- filter(movedata, movedata$location.long >= 0)
@@ -40,8 +46,7 @@ movedata <- filter(movedata, movedata$location.long >= 0)
 #check
 min(movedata$location.lat)
 
-conflict_prefer("select", "dplyr")
-conflict_prefer("rename", "dplyr")
+
 #take individuals identificatio, timestamp, long, and lat 
 movedata_nestR <- select(movedata, tag.local.identifier, timestamp, location.long, location.lat)
 
@@ -76,10 +81,42 @@ BTGO_Argos_output$nests %>% filter(burst == "123424-2016") %>% head()
 #Take the lat and long coordinates from the nest prediction
 coords_cand <- BTGO_Argos_output$nests %>% filter(burst == "123424-2016") %>% slice(1) %>% select(long, lat)
 
-#Need to grab the lat and long nest locations for each individual
+#Need to grab the 31U and UTM nest locations for each individual
 individual <- read.csv("./CSV/Argos_Individual_Information_BTGO_Haanmeer.csv"); head(individual)
-nest <- read.csv("./CSV/Argos_Nesting_Information_BTGO_Haanmeer.csv");head(nest)
+nest <- read.csv("./CSV/Haanmer_Argos_NestInformation.csv");head(nest)
 
-nestForEachIndividual <- select(nest, NestID, X31U, UTM)
+#Change Capture_NestID to match in both documents
+individual <- rename(individual, c("NestID" = "Capture_NestID")); head(individual)
 
+#merge the data based on NestID
+nest_individual <- merge(nest, individual, by = "NestID");head(nest_individual)
 
+#filter out only the ringnumber of the individual, NestID and coordinates
+nestForEachIndividual <- select(nest_individual,Ringnumber, NestID, X31U, UTM)
+
+nestCoords <- select(nestForEachIndividual, X31U, UTM)
+nestCoords$X31U <- as.numeric(nestCoords$X31U)
+nestCoords$UTM <- as.numeric(nestCoords$UTM)
+complete_coords <- na.omit(nestCoords)
+
+#Make UTM and 31U into lat and long
+library(rgdal)
+
+sputm <- SpatialPoints(complete_coords, proj4string=CRS("+proj=utm +zone=31 ellps=bessel"))
+spgeo <- spTransform(sputm, CRS("+proj=longlat +datum=WGS84"))
+
+lat_long_locs <- data.frame(as(spgeo , "SpatialPoints"))
+
+nestForEachIndividualLATLONG <- data.frame("Ringnumber" = 0, "NestID" = 0, "lat" = 0, "long" = 0)
+
+copy <- na.omit(nestForEachIndividual)
+
+lat_long_locs$RingNumber <- copy$Ringnumber
+lat_long_locs$NestID <- copy$NestID
+
+lat_long_locs <- lat_long_locs %>% select(RingNumber, NestID, everything())
+lat_long_locs <- rename(lat_long_locs, c("long" = "X31U", "lat" = "UTM")); head(lat_long_locs)
+
+coords_known <- lat_long_locs %>% filter(NestID == "1606905605") %>% select(long, lat)
+
+geosphere::distGeo(coords_cand, coords_known)

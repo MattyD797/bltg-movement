@@ -1,0 +1,32 @@
+Error log 
+
+Burst 144435-2016: no locations found for the specified set of parameters
+Burst 144435-2018: no locations found for the specified set of parameters
+Burst 144435-2019: no locations revisited for more than 2 days
+Burst 144441-2015: no locations found for the specified set of parameters
+Burst 144430-2015: no locations found for the specified set of parameters
+Burst 144440-2015: no locations found for the specified set of parameters
+Burst 144434-2015: no locations found for the specified set of parameters
+Burst 144434-2016: no locations found for the specified set of parameters
+Burst 144418-2015: no locations found for the specified set of parameters
+Burst 144428-2015: no locations found for the specified set of parameters
+Burst 144425-2015: no locations found for the specified set of parameters
+Burst 144419-2015: no locations found for the specified set of parameters
+Burst 144422-2015: no locations found for the specified set of parameters
+Burst 144422-2017: no locations found for the specified set of parameters
+Burst 144443-2015: no locations found for the specified set of parameters
+Burst 144443-2016: no locations found for the specified set of parameters
+Burst 144431-2015: no locations found for the specified set of parameters
+Burst 144438-2015: no locations found for the specified set of parameters
+Burst 144154-2015: no locations found for the specified set of parameters
+Burst 144154-2016: no locations found for the specified set of parameters
+Burst 134755-2016: no locations found for the specified set of parameters
+Burst 144129-2016: no locations found for the specified set of parameters
+Burst 151862-2016: no locations found for the specified set of parameters
+Burst 157539-2017: no locations found for the specified set of parameters
+Burst 157536-2017: no locations found for the specified set of parameters
+Burst 157536-2018: no locations found for the specified set of parameters
+Burst 157536-2019: no locations found for the specified set of parameters
+Burst 157536-2020: no locations found for the specified set of parameters
+Burst 157558-2017: no locations found for the specified set of parameters
+Burst 157558-2018: no locations found for the specified set of parameters
