@@ -1,0 +1,4 @@
+Error log 
+
+Burst 144435-2016: no locations revisited for more than 2 days
+Burst 144435-2019: no locations revisited for more than 2 days
