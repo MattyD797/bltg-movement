@@ -160,9 +160,9 @@ vignette("nestR")
 # since they are solar powered, fixes only happen in the day so that the max fixes were 64.
 
 #randomly select two birds to test with the find_nests function
-rand <- sample(levels(as.factor(BTGO_Haanmeer_nestR$burst)), size = 2)
-godwit.test <- BTGO_Haanmeer_nestR %>% filter(burst == rand[1] | burst == rand[2])
-head(godwit.test)
+#rand <- sample(levels(as.factor(BTGO_Haanmeer_nestR$burst)), size = 2)
+#godwit.test <- BTGO_Haanmeer_nestR %>% filter(burst == rand[1] | burst == rand[2])
+#head(godwit.test)
 
 BTGO_Haanmeer_output_1 <- find_nests(gps_data = BTGO_Haanmeer_nestR,
                             sea_start = "03-01",
@@ -590,4 +590,5 @@ plot(BTGO_pb0_coda)
 plot(BTGO_pb1_coda)
 
 # END #
+
 
