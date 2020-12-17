@@ -86,11 +86,22 @@ lags <- as.data.frame(do.call(rbind, loop_object))
 mean(lags$V1) #this is the typical lag of all tags in seconds: 1490.14
 
 #interpolate between known locations
-BTGO_move2 <- redisltraj(na.omit(BTGO_move),3600,type="time"); BTGO_move2
+# BTGO_move2 <- redisltraj(na.omit(BTGO_move),3600,type="time"); BTGO_move2
+# 
+# #convert to data frame
+# data <- ld(BTGO_move2)
+# head(data)
 
-#convert to data frame
-data <- ld(BTGO_move2)
-head(data)
+for(i in 1:length(BTGO_move)){
+  ref <- round(BTGO_move[[i]]$date[1], "hours")
+  BTGO_move[i] %>% 
+    setNA(ltraj = ., date.ref = ref, dt = 1, units = "hour") %>%
+    sett0(ltraj = ., date.ref = ref, dt = 1, units = "hour") -> BTGO_move[i]
+}
+
+is.regular(BTGO_move)
+
+data <- ld(BTGO_move)
 
 #keep only columns with id, date, x, y
 data <- data[,c(1,2,3,11)]
@@ -106,7 +117,6 @@ head(hmmdata) #step lengths are in km
 
 #### Visualize parameters ####
 #we imagine three states: adult foraging, tending, resting
-
 
 ggplot(hmmdata, aes(step)) + geom_density(color = "red", fill = "red", alpha = 0.3) + theme_classic() + coord_cartesian(xlim=c(0,10)) 
 
@@ -170,81 +180,16 @@ whichbest <- which.min(allnllk)
 mbest <- allm_parallel[[whichbest]]
 mbest
 
+#here we see the distribution of states
+plot(mbest)
+
+
+#state 1 is most like chick tending (or foraging) behavior, and would be difficult to seperate those two
+plotStates(mbest)
+
+#checking the global fit - this looks pretty good
+plotPR(mbest)
 
 
 
 
-
-
-
-
-
-
-
-
-#### test fitHMM ####
-
-## initial parameters for gamma and von Mises distributions
-
-mu0 <- c(0.01,2) # step mean (two parameters: one for each state) in km. state 1 involving relatively short steps and many turnings, state 2 involving loger steps and fewer turnings
-sigma0 <- c(0.01,2) # step SD
-
-#zeromass0 <- c(0.1,0.05,0.01,0.001) # step zero-mass
-angleMean0 <- c(pi,0) # angle mean
-kappa0 <- c(1,1) # angle concentration - corresponds to how concentrated the data are around the mean, large is concentrated, small is not concentrated
-
-stepPar0 <- c(mu0,sigma0)
-anglePar0 <- c(angleMean0,kappa0)
-
-
-m <- fitHMM(data=hmmdata, nbStates = 2, stepPar0=stepPar0,anglePar0 = anglePar0,formula=~1)
-
-m
-
-
-#### choosing starting values following ####
-
-#try many starting values: Here were fit the model with many different sets of starting values, and select the best model fit among those
-#One possible way to do this is to generate starting values at random, from a distribution of plausible values.
-# We can use a uniform distribution fitted over the range of values observed in the histograms before
-
-# For reproducibility
-set.seed(12345)
-# Number of tries with different starting values
-niter <- 25
-# Save list of fitted models
-allm <- list()
-for(i in 1:niter) {
-  # Step length mean
-  stepMean0 <- runif(2,
-                     min = c(0.001, 0.1),
-                     max = c(0.1, 0.5))
-  # Step length standard deviation
-  stepSD0 <- runif(2,
-                   min = c(0.001, 0.1),
-                   max = c(0.1, 0.5))
-  # Turning angle mean
-  angleMean0 <- c(pi, 0)
-  # Turning angle concentration
-  angleCon0 <- runif(2,
-                     min = c(0.1, 1),
-                     max = c(5, 10))
-  # Fit model
-  stepPar0 <- c(stepMean0, stepSD0)
-  anglePar0 <- c(angleMean0, angleCon0)
-  allm[[i]] <- fitHMM(data = hmmdata, nbStates = 2, stepPar0 = stepPar0,
-                      anglePar0 = anglePar0)
-}
-
-
-# Extract likelihoods of fitted models
-allnllk <- unlist(lapply(allm, function(m) m$mod$minimum))
-allnllk
-
-#these clearly have issues with convergence!!!!!!!!! MLE should not be in the billions of trillions!
-
-#Index of best fitting model (smallest negative log-likelihood)
-whichbest <- which.min(allnllk)
-# Best fitting model
-mbest <- allm[[whichbest]]
-mbest
