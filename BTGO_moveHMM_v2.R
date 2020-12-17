@@ -110,6 +110,8 @@ data <- data[,c(1,2,3,11)]
 data$x <- data$x/1000 
 data$y <- data$y/1000
 
+colnames(data)[4] <- "ID"
+
 #create hmm data object
 hmmdata <- prepData(data, type="UTM", coordNames = c("x", "y"))
 
