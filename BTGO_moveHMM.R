@@ -107,6 +107,7 @@ head(hmmdata) #step lengths are in km
 #### Visualize parameters ####
 #we imagine three states: adult foraging, tending, resting
 
+
 ggplot(hmmdata, aes(step)) + geom_density(color = "red", fill = "red", alpha = 0.3) + theme_classic() + coord_cartesian(xlim=c(0,10)) 
 
 ggplot(hmmdata, aes(angle)) + geom_density(color = "red", fill = "red", alpha = 0.3) + coord_cartesian(xlim=c(-pi,pi)) + theme_classic() # TA near 0 correspond to persitant, directed movement
@@ -184,8 +185,10 @@ mbest
 #### test fitHMM ####
 
 ## initial parameters for gamma and von Mises distributions
+
 mu0 <- c(0.01,2) # step mean (two parameters: one for each state) in km. state 1 involving relatively short steps and many turnings, state 2 involving loger steps and fewer turnings
 sigma0 <- c(0.01,2) # step SD
+
 #zeromass0 <- c(0.1,0.05,0.01,0.001) # step zero-mass
 angleMean0 <- c(pi,0) # angle mean
 kappa0 <- c(1,1) # angle concentration - corresponds to how concentrated the data are around the mean, large is concentrated, small is not concentrated
@@ -195,8 +198,9 @@ anglePar0 <- c(angleMean0,kappa0)
 
 
 m <- fitHMM(data=hmmdata, nbStates = 2, stepPar0=stepPar0,anglePar0 = anglePar0,formula=~1)
+
 m
-plot(m)
+
 
 #### choosing starting values following ####
 
