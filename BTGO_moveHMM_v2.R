@@ -27,7 +27,7 @@ rm(list=ls(all=TRUE))
 
 #see outputs in standard (not scientific notation)
 options(scipen = 999)
-options(max.print=1600) #if you need to see the complete output
+options(max.print=100) #if you need to see the complete output
 #
 
 #read in the data and preview
@@ -110,6 +110,7 @@ data <- data[,c(1,2,3,11)]
 data$x <- data$x/1000 
 data$y <- data$y/1000
 
+#id needs to be capitalized so that each animal has its own track
 colnames(data)[4] <- "ID"
 
 #create hmm data object
@@ -182,16 +183,36 @@ whichbest <- which.min(allnllk)
 mbest <- allm_parallel[[whichbest]]
 mbest
 
+
+#### Visualize in plots ####
+
 #here we see the distribution of states
 plot(mbest)
 
 
 #state 1 is most like chick tending (or foraging) behavior, and would be difficult to seperate those two
+par(mfrow=c(10,4))
 plotStates(mbest)
+dev.off()
 
 #checking the global fit - this looks pretty good
+par(mar=  c(1,1,1,1))
 plotPR(mbest)
+dev.off()
 
+#### Printing outputs ####
+
+#print the movement data
+#write.csv(mbest$data, file = "C:/Users/14064/Dropbox/BTGO Movmement Study/Output/HMM_GPS.csv")
+
+#print the state probabilities - For a given model, computes the probability of the process being in the different states at each time point.
+#write.csv(stateProbs(mbest), file = "C:/Users/14064/Dropbox/BTGO Movmement Study/Output/HMM_GPS_states.csv")
+
+#most probable states for a given sequence - from the viterbi algorithm 
+#write.csv(viterbi(mbest), file = "C:/Users/14064/Dropbox/BTGO Movmement Study/Output/HMM_GPS_viterbi_mostlikely_states.csv")
+
+#
+moveHMM::CI(mbest, 0.95)
 
 
 
