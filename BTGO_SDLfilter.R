@@ -29,6 +29,28 @@ setwd("C:/Users/14064/Dropbox/BTGO Movmement Study/Data/Data from Senner 2015/")
 #read in the data
 movedata <- read.csv("./Continental black-tailed godwits (data from Senner et al. 2015).csv"); head(movedata)
 
+
+#set the colors for each individual tag
+# get domain of numeric data
+#domain <- factor(movedata.breed$tag.local.identifier)
+
+# make palette
+#factpal <- colorFactor(viridis(36), domain)
+
+#plot the data to visualize on a map
+#leaflet(data=movedata.breed) %>% addTiles(group="Map")%>%
+# addProviderTiles("Esri.WorldImagery",group="Sattelite") %>%
+# addCircleMarkers(~location.long, ~location.lat, color = ~factpal(tag.local.identifier),label =~as.character(timestamp),radius = 3,stroke = F,fillOpacity = .7)%>%
+# addLayersControl(baseGroups = c("Map", "Satellite"),options=layersControlOptions(collapsed=F))
+
+
+#for Mo's data only! ----> Nate's birds may need different corrections (I don't think they do though)
+#
+#there are two mistakes in the ID column, this corrects these
+movedata$tag.local.identifier[movedata$tag.local.identifier == "151862"] <- "151682"
+movedata$tag.local.identifier[movedata$tag.local.identifier == "157539"] <- "157535"
+
+
 #clean the data and put in correct format
 #filter
 data <- movedata[,c(3,4,5,13,26)]; head(data)
@@ -43,26 +65,20 @@ data <- na.omit(data)
 data$DateTime <- as.POSIXct(strptime(as.character(data$DateTime),"%Y-%m-%d %H:%M:%S", tz="GMT"))
 
 
-#will want a for loop for this
 
-#select a bird ID
-bird_134755 <- data %>% filter(id == "134755")
+#erases duplicate locations that are both less than 36 seconds apart in time AND less than 10 meters apart in space
+loop_object <- vector("list", length(unique(data$id)))
 
-#filter duplicates in time and in space, if the dup in space fall within the time threshold (conditional = TRUE). step parameters are in hours and km resp.
-bird_134755 <- dupfilter(bird_134755, step.time = 0.01, step.dist = 0.3, conditional = TRUE)
-#next, remove fixes from B,Z,0 class
-bird_134755 <- ddfilter(bird_134755, qi = c(3,5,6,7))
+for(i in unique(data$id)){
 
-#calculate the track parameters from the data:
-  #pTime - hours from hours from a previous fix
-  #sTime - are hours to a subsequent fix 
-  #pDist - straight distances in kilometres from a previous
-  #sDist - straight distances in kilometres to a subsequent fix 
-  #pSpeed - linear speed (km/h) from a previous
-  #sSpeed - to a subsequent fix 
-  #inAng - the degree between the bearings of lines joining successive location points
-  # meanSpeed - calculated over 'days' length of time
-  #meanAngle - daily
+  x <- data %>% dplyr::filter(id == i)
+  loop_object[[i]] <- dupfilter(x, step.time = 0.01, step.dist = 0.01, conditional = TRUE)
+}
 
-track_param(bird_134755, param = c("time", "distance", "speed", "angle", "mean speed", "mean angle"), days = 1)
+#this binds them back together to get the fixed data.
+BTGO_dup.rem <- as.data.frame(do.call(rbind, loop_object)); head(BTGO_dup.rem)
 
+
+#Hays et al. 2001 (doi: 10.1006/anbe.2001.1685) recommends you use these only
+
+BTGO_dup.rem_qi <- ddfilter_loop(BTGO_dup.rem, qi = c(-1,1,2,3)); head(BTGO_dup.rem_qi) #this then is the argos data we can use further on!
