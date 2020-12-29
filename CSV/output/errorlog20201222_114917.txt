@@ -1,0 +1,7 @@
+Error log 
+
+Burst 134747-2020: no locations found for the specified set of parameters
+Burst 144154-2015: no locations found for the specified set of parameters
+Burst 144418-2016: no data available within the nesting season
+Burst 144419-2016: no locations found for the specified set of parameters
+Burst 144420-2017: no data available within the nesting season
