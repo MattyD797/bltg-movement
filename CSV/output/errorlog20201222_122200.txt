@@ -1,0 +1,19 @@
+Error log 
+
+Burst 144129-2019: no locations found for the specified set of parameters
+Burst 144154-2015: no locations found for the specified set of parameters
+Burst 144426-2015: no locations found for the specified set of parameters
+Burst 144427-2015: no locations found for the specified set of parameters
+Burst 144429-2015: no locations found for the specified set of parameters
+Burst 144430-2016: no locations found for the specified set of parameters
+Burst 144431-2015: no locations found for the specified set of parameters
+Burst 144435-2016: no locations found for the specified set of parameters
+Burst 144435-2019: no locations revisited for more than 2 days
+Burst 144440-2015: no locations found for the specified set of parameters
+Burst 144440-2017: no locations found for the specified set of parameters
+Burst 151682-2016: no locations found for the specified set of parameters
+Burst 157535-2017: no locations found for the specified set of parameters
+Burst 157536-2017: no locations found for the specified set of parameters
+Burst 157553-2017: no locations found for the specified set of parameters
+Burst 157558-2017: no locations found for the specified set of parameters
+Burst 157558-2018: no locations found for the specified set of parameters

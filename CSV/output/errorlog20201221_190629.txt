@@ -1,0 +1,5 @@
+Error log 
+
+Burst 144426: no locations found for the specified set of parameters
+Burst 144433: no locations revisited for more than 2 days
+Burst 144420: no locations found for the specified set of parameters
