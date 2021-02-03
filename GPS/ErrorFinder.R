@@ -43,9 +43,33 @@ transmitter_info.INY$ID <- paste0(transmitter_info.INY$TransmitterID, "-",transm
 indAndNest <- transmitter_info.INY[,c(4,3)]
 head(indAndNest)
 
-indAndNest.loc <- cbind(indAndNest, nest_loc[,c(2,3)])
+#Add the known Hatch Dates
+indAndNest.loc <- cbind(indAndNest, nest_loc[,c(2,3)], transmitter_info$HatchDate)
+names(indAndNest.loc)[names(indAndNest.loc) == "transmitter_info$HatchDate"] <- "Hatch Date"
 head(indAndNest.loc)
 head(movement_data)
+
+
+#reformat the date for the movement data
+movement_data$date <- as.Date(as.character(movement_data$date), format = "%m/%d/%Y")
+
+head(movement_data)
+
+
+#reformat the date data
+indAndNest.loc$`Hatch Date` <- gsub('Apr','04', indAndNest.loc$`Hatch Date`)
+indAndNest.loc$`Hatch Date` <- gsub('May','05', indAndNest.loc$`Hatch Date`)
+indAndNest.loc$`Hatch Date` <- gsub('Jun','06', indAndNest.loc$`Hatch Date`)
+indAndNest.loc$`Hatch Date` <- gsub('Apr','04', indAndNest.loc$`Hatch Date`)
+indAndNest.loc$`Hatch Date` <- gsub('May','05', indAndNest.loc$`Hatch Date`)
+indAndNest.loc$`Hatch Date` <- gsub('Jun','06', indAndNest.loc$`Hatch Date`)
+
+
+indAndNest.loc$`Hatch Date` <- as.Date(indAndNest.loc$`Hatch Date`, "%d-%m-%Y")
+indAndNest.loc$`Hatch Date` <- as.Date(gsub('00','20', indAndNest.loc$`Hatch Date`))
+head(indAndNest.loc)
+
+
 
 #find smallest distance
 
@@ -53,22 +77,39 @@ results <- data.frame(matrix(ncol = 4, nrow = 0))
 colnames(results) <- c("ID", "dist", "knownlat", "knownlon")
 
 #Run a for loop through each year of each individual
+library(geosphere)
 for (val in unique(movement_data$burst))
 {
   if(val %in% indAndNest.loc$ID){
-    output1 <- movement_data %>%
-                dplyr::filter(burst == val)
-    coords <- output1[,c(2,3)]
     
     output2 <- indAndNest.loc %>%
-      dplyr::filter(ID == val)
+      dplyr::filter(ID == val) 
     
     known_coords <- output2[,c(4,3)]
     
-    de <- data.frame(val, min(distm(known_coords, coords)), output2$lat, output2$lon)
-    results <- rbind(results, de)
+    output1 <- movement_data %>%
+      dplyr::filter(burst == val)
+    
+    output1.d <- output1 %>%
+      dplyr::filter(date <= output2$`Hatch Date`)
+    
+    coords <- output1[,c(2,3)]
+    
+    if(nrow(output1.d) > 0)
+    {
+      de <- data.frame(val, min(distm(known_coords, coords)), output2$lat, output2$lon)
+      results <- rbind(results, de)
+    } else {
+      de <- data.frame(val, -1, -1, -1)
+      de <- de %>% 
+        dplyr::rename(
+          min.distm.known_coords..coords.. = X.1,
+          output2.lat = X.1.1,
+          output2.lon = X.1.2
+        )
+      results <- rbind(results, de)
+    }
   }
-  
 }
 
 results <- results %>% 
@@ -77,9 +118,10 @@ results <- results %>%
     "Nest Latitude" = output2.lat,
     "Nest Longitude" = output2.lon
   )
+str(results)
 
 
-
+write.csv(results, "CSV/ErrorRateFiltered.csv")
 
 
 
