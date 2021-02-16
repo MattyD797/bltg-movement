@@ -88,17 +88,16 @@ indnestloc <- read.csv("./IndNestLocation.csv")
 for(j in unique(data1.utm$id)){
   individual1 <- droplevels(dplyr::filter(data1.utm, id == j))
   individual1.nest <- droplevels(dplyr::filter(indnestloc, ID == j))
-  for(k in c(1:nrow(individual1.nest)))
-  {
-    cord.dec = SpatialPoints(cbind(individual1.nest[k,]$lon, individual1.nest[k,]$lat), proj4string=CRS("+proj=longlat"))
-    coords.known <- data.frame(spTransform(cord.dec, CRS("+proj=utm +zone=31 +datum=WGS84")))
-    for (i in seq(2,200,1)){
-      #This is getting the recursion at a buffer of i between 2 - 200
-      indvisit <- getRecursions(individual1, i)
-      coords.pred <- individual1[which.max(indvisit$revisits),c(1,2)]
-      #find the euclidean distance between the predicted site and the known site
-      logbook[i-1,paste(j,"(",k,")")] <- pointDistance(coords.known, coords.pred, type="Euclidean", lonlat = FALSE)
-    }
+ 
+  cord.dec = SpatialPoints(cbind(individual1.nest[1,]$lon, individual1.nest[1,]$lat), proj4string=CRS("+proj=longlat"))
+  coords.known <- data.frame(spTransform(cord.dec, CRS("+proj=utm +zone=31 +datum=WGS84")))
+  for (i in seq(2,200,2)){
+    #This is getting the recursion at a buffer of i between 2 - 200
+    indvisit <- getRecursions(individual1, i)
+    coords.pred <- individual1[which.max(indvisit$revisits),c(1,2)]
+    #find the euclidean distance between the predicted site and the known site
+    logbook[i-1,j] <- pointDistance(coords.known, coords.pred, type="Euclidean", lonlat = FALSE)
+    
   }
 }
 
