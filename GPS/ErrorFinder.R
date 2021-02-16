@@ -3,7 +3,7 @@ movement_data <- read.csv("CSV/GPS_BTGO_Haanmeer_nestR.csv", header = TRUE)
 head(movement_data)
 
 #Read in the known nest locations
-nest_loc <- read.csv("CSV/GPS Data/UvA_nest_locs.csv", header = TRUE)
+nest_loc <- read.csv("./GPS Data/UvA_nest_locs.csv", header = TRUE)
 head(nest_loc)
 
 #Reformat nest locations into lat and long
@@ -34,7 +34,7 @@ nest_loc <- nest_loc[,c(1:3)]
 head(nest_loc)
 
 #Read in transmitter information
-transmitter_info <- read.csv("CSV/GPS Data/UvA_Transmitter_Info.csv", header = T)
+transmitter_info <- read.csv("./GPS Data/UvA_Transmitter_Info.csv", header = T)
 head(transmitter_info)
 
 #Reformat transmitter info to only include ID of individual, ID of nest and Year
