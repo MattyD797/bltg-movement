@@ -41,6 +41,8 @@ data1 <- dplyr::filter(data1, burst != "1002-2012")
 data1 <- dplyr::filter(data1, burst != "2016-2013")
 data1 <- dplyr::filter(data1, burst != "2010-2013")
 data1 <- dplyr::filter(data1, burst != "2002-2015")
+data1 <- dplyr::filter(data1, burst != "2041-2013")
+data1 <- dplyr::filter(data1, burst != "2004-2014")
 
 #filter out the nesting area coordinates
 data1.filt <- data1[data1[,3] > 52,]
