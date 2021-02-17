@@ -93,7 +93,7 @@ for(j in unique(data1.utm$id)){
  
   cord.dec = SpatialPoints(cbind(individual1.nest[1,]$lon, individual1.nest[1,]$lat), proj4string=CRS("+proj=longlat"))
   coords.known <- data.frame(spTransform(cord.dec, CRS("+proj=utm +zone=31 +datum=WGS84")))
-  for (i in seq(2,200,2)){
+  for (i in seq(2,50,1)){
     #This is getting the recursion at a buffer of i between 2 - 200
     indvisit <- getRecursions(individual1, i)
     coords.pred <- individual1[which.max(indvisit$revisits),c(1,2)]

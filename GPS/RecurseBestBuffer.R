@@ -41,6 +41,8 @@ data1 <- dplyr::filter(data1, burst != "1002-2012")
 data1 <- dplyr::filter(data1, burst != "2016-2013")
 data1 <- dplyr::filter(data1, burst != "2010-2013")
 data1 <- dplyr::filter(data1, burst != "2002-2015")
+data1 <- dplyr::filter(data1, burst != "2041-2013")
+data1 <- dplyr::filter(data1, burst != "2004-2014")
 
 #filter out the nesting area coordinates
 data1.filt <- data1[data1[,3] > 52,]
@@ -92,11 +94,11 @@ for(j in unique(data1.utm$id)){
   {
     cord.dec = SpatialPoints(cbind(individual1.nest[k,]$lon, individual1.nest[k,]$lat), proj4string=CRS("+proj=longlat"))
     coords.known <- data.frame(spTransform(cord.dec, CRS("+proj=utm +zone=31 +datum=WGS84")))
-    for (i in seq(2,200,1)){
+    for (i in seq(2,50,5)){
       #This is getting the recursion at a buffer of i between 2 - 200
       indvisit <- getRecursions(individual1, i)
       #get the top 20% of locations by number of revisists
-      visitThreshold = quantile(indvisit$revisits, 0.8)
+      visitThreshold = quantile(indvisit$revisits, 0.995)
       #find the 1 location that is expected to be the nest
       popCluster = kmeans(individual1[indvisit$revisits > visitThreshold,c("x", "y")], centers = 1)
       #get the coordinates of the highest visited site
