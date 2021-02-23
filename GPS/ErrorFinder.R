@@ -1,9 +1,9 @@
 #Read in the movement data
-movement_data <- read.csv("CSV/GPS_BTGO_Haanmeer_nestR.csv", header = TRUE)
+movement_data <- read.csv("./CSV/GPS_BTGO_Haanmeer_nestR.csv", header = TRUE)
 head(movement_data)
 
 #Read in the known nest locations
-nest_loc <- read.csv("CSV/GPS Data/UvA_nest_locs.csv", header = TRUE)
+nest_loc <- read.csv("./CSV/GPS Data/UvA_nest_locs.csv", header = TRUE)
 head(nest_loc)
 
 #Reformat nest locations into lat and long
@@ -121,7 +121,7 @@ results <- results %>%
 str(results)
 
 
-write.csv(results, "CSV/ErrorRateFiltered.csv")
+#write.csv(results, "CSV/ErrorRateFiltered.csv")
 
 
 

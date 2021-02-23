@@ -60,7 +60,15 @@ plot(animals$x, animals$y, col = c(1:24)[as.numeric(animals$id)],
 
 #A circle of radius R is drawn around each point in the trajectory. The number of revisits is calculated
 #as the number of segments of the trajectory passing through that circle.
-popvisit = getRecursions(subset(animals, id ==unique(id)[3]), 7)
+matrix <- dim(Inf, -Inf)
+
+for(i in length(unique(animals$id))){
+  recursions_all = getRecursions(subset(animals, id == unique(id)[i]), 7)
+}
+popvisit = getRecursions(subset(animals, id == unique(id)[3]), 7)
+
+
+
 
 #plot(popvisit, animals)
 #Now we have two vectors and additional revisit stats in popvisit...Time to move to momentHMM. 
@@ -88,7 +96,7 @@ colnames(rawData[8]) <- "revisits"
 nest <- rawData[which.max(popvisit[["revisits"]]),c(2,3)]
 
 
-#Need to set up an even amount of time for every hou, so we predict locations
+#Need to set up an even amount of time for every hour, so we predict locations
 crwOut <- crawlWrap(obsData=rawData, timeStep="hour",
                     theta=c(6.855, -0.007), fixPar=c(NA,NA))
 rownames(nest) <- "nest"
@@ -103,8 +111,9 @@ angleFormula <- ~state1(nest.angle)
 
 
 
-
 birdData <- momentuHMM::prepData(data=crwSim, type = UTM, coordNames = crwOut[["crwFits"]][[1]][["coord"]])
+
+
 stepDM <- list(shape = distFormula, scale = distFormula)
 
 angleDM <- list(mean = angleFormula, concentration = distFormula)
