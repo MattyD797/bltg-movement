@@ -1,0 +1,143 @@
+---
+title: "Two Stage HMM model (3-2)"
+date: "`r Sys.Date()`"
+author: Matt Duggan
+output: pdf_document
+---
+  
+```{r setup, include=FALSE, echo=FALSE}
+#### Load packages and data ####
+
+#create function to load and install (missing) packages
+foo <- function(x){
+  for( i in x ){
+    #  require returns TRUE invisibly if it was able to load package
+    if( ! require( i , character.only = TRUE ) ){
+      #  If package was not able to be loaded then re-install
+      install.packages( i , dependencies = TRUE )
+      #  Load package after installing
+      require( i , character.only = TRUE )
+    }
+  }
+}
+
+#load or install packages
+foo( c("dplyr", "sp", "ggplot2", "ggmap", "plyr", "lubridate", "SDLfilter", "moveHMM", "momentuHMM", "bsam", "parallel", "adehabitatLT", "recurse", "fitdistrplus", "logspline", "knitr", "fitdistrplus", "logspline"))
+
+#clean old objects from R
+rm(list=ls(all=TRUE))
+
+#see outputs in standard (not scientific notation)
+options(scipen = 999)
+options(max.print=100) #if you need to see the complete output
+
+opts_knit$set(root.dir = '..')
+```
+
+```{r data processing}
+setwd("..")
+#read in the data and preview
+data1 <- read.csv("./CSV/GPS_BTGO_Haanmeer_nestR.csv"); head(data1)
+#these two birds had too much missing data
+data <- dplyr::filter(data1, burst != "1009-2012" & 
+                             burst != "2002-2014" &
+                             burst != "1002-2012" & 
+                             burst != "2002-2015" & 
+                             burst != "2010-2013" & 
+                             burst != "2004-2014" & 
+                             burst != "2041-2013")
+
+#convert time object to time-date format
+data$date <- as.POSIXct(strptime(as.character(data$date), format = "%m/%d/%Y %H:%M:%S", tz="GMT"))
+colnames(data) <- c("ID", "lon", "lat", "DateTime")
+data <- na.omit(data)
+```
+  
+```{r coordinates transformation}
+#convert lon lat to UTM coordinates 
+coordinates(data) <- c("lon", "lat")
+proj4string(data) <- CRS("+proj=longlat +zone=31 +datum=WGS84")
+
+#UTM is in meters, but is based on zones - the zone of the region in Netherlands is 31N or 32N (western Netherlands)
+utm <- spTransform(data, CRSobj="+proj=utm +zone=31 +datum=WGS84")
+utm_locs <- data.frame(as(utm, "SpatialPoints"))
+colnames(utm_locs) <- c("UTM_E", "UTM_N")
+
+#New data with id, date, UTM_E, UTM_N
+BTGO <- data.frame(ID = data$ID,date = data$DateTime, UTM_E = utm_locs$UTM_E, UTM_N = utm_locs$UTM_N); head(BTGO)
+#convert to a traj object
+BTGO_move <- as.ltraj(xy = BTGO[, c("UTM_E", "UTM_N")], date = BTGO$date, id = BTGO$ID)
+write.csv(BTGO, "./UTMCoordinates.csv")
+```
+
+```{r increment smooth traj and reformat}
+loop_object <- vector("list", length(1:length(BTGO_move)))
+for(i in 1:length(BTGO_move)){loop_object[[i]] <- median(BTGO_move[[i]]$dt, na.rm = TRUE)} 
+lags <- as.data.frame(do.call(rbind, loop_object))
+
+#this is the typical lag of all tags in seconds: 1423.204
+mean(lags$V1)
+
+for(i in 1:length(BTGO_move)){
+  ref <- round(BTGO_move[[i]]$date[1], "hours")
+  BTGO_move[i] %>% 
+    setNA(ltraj = ., date.ref = ref, dt = 1, units = "hour") %>%
+    sett0(ltraj = ., date.ref = ref, dt = 1, units = "hour") -> BTGO_move[i]
+}
+#Should be TRUE
+is.regular(BTGO_move)
+#Keep regular incrementing data
+data <- ld(BTGO_move)
+#Keep only x, y, date, id
+data <- data[,c(1,2,3,11)]
+
+#convert from m to km
+data$x <- data$x/1000 
+data$y <- data$y/1000
+
+#id needs to be capitalized so that each animal has its own track
+colnames(data)[4] <- "ID"
+```
+
+```{r test data}
+#test data
+test <- filter(data, ID == "1009-2013" | ID ==  "2004-2013" | ID == "2002-2013")
+#The number of test birds
+Num <- length(unique(as.vector(test$ID))) 
+```
+  
+```{r running recurse}
+#Get residence time & revisits, 3 radius as found with RecurseBestBufferv2.R
+recursions_all = getRecursions(data, radius = 3, timeunits = c("hours"))
+
+data.recurse <- cbind(data, recursions_all$revisits)
+data.recurse <- cbind(data.recurse, recursions_all$residenceTime)
+
+colnames(data.recurse)[c(5,6)] <- c("revisits", "residence_time")
+```
+  
+```{r prep HMM data}
+#calculation of step length (km), turning angle, and covariates
+hmmdata <- momentuHMM::prepData(data.recurse, 
+                                type="UTM", 
+                                coordNames = c("x", "y"), 
+                                covNames = c("revisits", "residence_time"))
+
+#Find initialization values
+par(mfrow = c(2,2))
+hist(hmmdata$step);quantile(hmmdata$step, probs = seq(0,1,.05), na.rm = T)
+hist(hmmdata$angle);quantile(hmmdata$angle, probs = seq(0,1,.05), na.rm = T) # TA near 0 correspond to persistent, directed movement
+hist(hmmdata$revisits); quantile(hmmdata$revisits, probs = seq(0,1,.05))
+hist(hmmdata$residence_time); quantile(hmmdata$residence_time, probs = seq(0,1,.05))
+```
+  
+```{r Distribution of covariates}
+#plot - the blue dot is your data, and depending on how close it is to markers (which can be shaded regions, points, or lines), you get an estimate of the proper distribution
+
+#Revisits and residence time follow a uniform distribution
+descdist(hmmdata$revisits, discrete = F)
+descdist(hmmdata$residence_time, discrete = F)
+
+
+```
+
