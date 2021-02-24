@@ -2,7 +2,6 @@
 # Author: Luke Wilde
 
 #Script to process and implement momentuHMM on GPS birds 
-
 #### Load packages and data ####
 
 #create function to load and install (missing) packages
@@ -131,6 +130,9 @@ Num <- length(unique(as.vector(test$ID)))
 #   recursions_all = getRecursions(subset(animals, id == unique(id)[i]), 7)
 # }
 
+#allow vectors of 35 gB
+memory.limit(35000)
+
 recursions_all = getRecursions(data, radius = 3, timeunits = c("hours"))
 
 data <- cbind(data, recursions_all$revisits)
@@ -168,7 +170,7 @@ length(whichzero)/nrow(hmmdata)
 
 #these packages allow you to visualize how close your observed distribution fits the theoretical distributions
 library(fitdistrplus)
-library(logspline) #install.packages("logspline")
+library(logspline)
 
 #plot - the blue dot is your data, and depending on how close it is to markers (which can be shaded regions, points, or lines), you get an estimate of the proper distribution
 descdist(hmmdata$revisits, discrete = F)
