@@ -138,6 +138,87 @@ hist(hmmdata$residence_time); quantile(hmmdata$residence_time, probs = seq(0,1,.
 descdist(hmmdata$revisits, discrete = F)
 descdist(hmmdata$residence_time, discrete = F)
 
+#Fit a uniform distribution
+revisit.fit.uniform <- fitdist(log(hmmdata$revisits), "unif", method = "mle")
+residence_time.fit.uniform <- fitdist(log(hmmdata$residence_time), "unif", method = "mle")
+
+#Show predicted distribution
+plot(revisit.fit.uniform)
+plot(residence_time.fit.uniform)
+
+#Present AIC values
+residence_time.fit.uniform$aic
+revisit.fit.uniform$aic
 
 ```
+```{r fitHMM}
+hmmdata <- momentuHMM::prepData(data.recurse, 
+                                type="UTM", 
+                                coordNames = c("x", "y"), 
+                                covNames = c("revisits", "residence_time"))
+
+
+# Create cluster of size ncores
+ncores <- detectCores() - 1
+cl <- makeCluster(getOption("cl.cores", ncores))
+# Export objects needed in parallelised function to cluster
+clusterExport(cl, list("hmmdata", "fitHMM"))
+# Number of tries with different starting values
+niter <- 25
+# Create list of starting values
+allPar0 <- lapply(as.list(1:niter), function(x) {
+  
+  ##
+  # stateNames: nesting, chick tending, foraging, migrating
+  ##
+  
+  # Step length~ gamma distribution (mean and sd)
+  stepMean0 <- runif(3,
+                     min = c(0.001, 0.2, 0.75),
+                     max = c(0.1, 0.75, 15))
+  # Step length standard deviation
+  stepSD0 <- runif(3,
+                     min = c(0.001, 0.2, 0.75),
+                     max = c(0.1, 0.75, 15))
+  # Turning angle mean ~ von Mises distribution (mean and concentration)
+  angleMean0 <- c(pi,0,0)
+  # Turning angle concentration - a large concentration indicates strong persistence in direction if the mean is 0, closer to 0 means undirected movement
+  angleCon0 <- runif(3,
+                     min = c(0,0.5, 3),
+                     max = c(0.5,3, 10))
+  #revisits ~ uniform distribution (min and max)
+  revisitsMin0 = runif(3, 
+                        min = c(40, 5, 0),
+                        max = c(1000, 64,39,15))
+  revisitsMax0 = runif(3, 
+                        min = c(64,39,15,3),
+                        max = c(150, 64,39,15))
+  
+  #residence time ~ uniform distribution (min and max)
+  residence_timesMin0 = runif(3, 
+                              min = c(2612,1800,1200,830),
+                              max = c(3000,2600,1800,1200))
+  residence_timeMax0 = runif(3, 
+                              min = c(2612,1800,1200,830),
+                              max = c(3000,2600,1800,1200))      
+  
+  # Return vectors of starting values
+  stepPar0 <- c(stepMean0, stepSD0)
+  anglePar0 <- c(angleMean0, angleCon0)
+  revisitsPar0 <- c(revisitsMean0, revisitsSD0)
+  residence_timePar0 <- c(residence_timeMean0, residence_timeSD0)
+  return(list(step = stepPar0, angle = anglePar0, revisits = revisitsPar0, residence_time = residence_timePar0))
+})
+
+# Fit the niter models in parallel
+allm_parallel <- parLapply(cl = cl, X = allPar0, fun = function(par0) {
+  m <- moveHMM::fitHMM(hmmdata_moveHMM, nbStates = 4, stepPar0 = par0$step,  anglePar0 = par0$angle)
+  return(m)
+})
+
+
+})
+```
+
+
 
