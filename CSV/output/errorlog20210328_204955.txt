@@ -1,0 +1,4 @@
+Error log 
+
+Burst 2002-2015: no locations found for the specified set of parameters
+Burst 2017-2013: no locations found for the specified set of parameters
